@@ -1,3 +1,6 @@
+# python main.py -c ./video/input/test.avi -o ./video/output/test_out.avi
+# python main.py -c 0 -o ./video/output/test_out.avi
+
 import os
 import cv2
 import time
@@ -14,6 +17,9 @@ from fn import draw_single
 
 from Track.Tracker import Detection, Tracker
 from ActionsEstLoader import TSSTG
+
+import imutils
+from imutils.video import FPS
 
 #source = '../Data/test_video/test7.mp4'
 #source = '../Data/falldata/Home/Videos/video (2).avi'  # hard detect
@@ -42,9 +48,9 @@ if __name__ == '__main__':
     par = argparse.ArgumentParser(description='Human Fall Detection Demo.')
     par.add_argument('-c', '--camera', required=True,  #default=2,
                         help='Source of camera or video file path.')
-    par.add_argument('--detection_input_size', type=int, default=384,
+    par.add_argument('--detection_input_size', type=int, default=256,
                         help='Size of input in detection model in square must be divisible by 32 (int).')
-    par.add_argument('--pose_input_size', type=str, default='224x160',
+    par.add_argument('--pose_input_size', type=str, default='192x128',
                         help='Size of input in pose model must be divisible by 32 (h, w)')
     par.add_argument('--pose_backbone', type=str, default='resnet50',
                         help='Backbone model for SPPE FastPose model.')
@@ -81,11 +87,13 @@ if __name__ == '__main__':
     cam_source = args.camera
     if type(cam_source) is str and os.path.isfile(cam_source):
         # Use loader thread with Q for video file.
-        cam = CamLoader_Q(cam_source, queue_size=1000, preprocess=preproc).start()
+        cam = CamLoader_Q(cam_source, queue_size=1024, preprocess=preproc).start()
+        time.sleep(0.0001)
     else:
         # Use normal thread loader for webcam.
         cam = CamLoader(int(cam_source) if cam_source.isdigit() else cam_source,
                         preprocess=preproc).start()
+        time.sleep(0.0001)
 
     #frame_size = cam.frame_size
     #scf = torch.min(inp_size / torch.FloatTensor([frame_size]), 1)[0]
@@ -98,6 +106,7 @@ if __name__ == '__main__':
 
     fps_time = 0
     f = 0
+    fps = FPS().start()
 	
     while cam.grabbed():
         f += 1
@@ -156,11 +165,11 @@ if __name__ == '__main__':
                 action = '{}: {:.2f}%'.format(action_name, out[0].max() * 100)
                 if action_name == 'Fall Down':
                     clr = (255, 0, 0)
-                    frame = cv2.putText(frame, action, (bbox[0] + 5, bbox[1] + 15), cv2.FONT_HERSHEY_COMPLEX, 0.4, clr, 1)
+                    frame = cv2.putText(frame, action, (bbox[0], bbox[1] - 5), cv2.FONT_HERSHEY_COMPLEX, 0.3, clr, 1)
                     frame = cv2.rectangle(frame, (bbox[0], bbox[1]), (bbox[2], bbox[3]), (255, 0, 0), 1)
                 elif action_name == 'Falling':
                     clr = (255, 0, 0)
-                    frame = cv2.putText(frame, action, (bbox[0] + 5, bbox[1] + 15), cv2.FONT_HERSHEY_COMPLEX, 0.4, clr, 1)
+                    frame = cv2.putText(frame, action, (bbox[0], bbox[1] - 5), cv2.FONT_HERSHEY_COMPLEX, 0.3, clr, 1)
                     frame = cv2.rectangle(frame, (bbox[0], bbox[1]), (bbox[2], bbox[3]), (255, 0, 0), 1)
                
             # VISUALIZE.
@@ -168,7 +177,7 @@ if __name__ == '__main__':
                 if args.show_skeleton:
                     frame = draw_single(frame, track.keypoints_list[-1])
                 
-                frame = cv2.putText(frame, str(track_id), (center[0], center[1]), cv2.FONT_HERSHEY_COMPLEX, 0.4, (255, 0, 0), 2)
+                frame = cv2.putText(frame, str(track_id), (center[0], center[1]), cv2.FONT_HERSHEY_COMPLEX, 0.4, (255, 0, 0), 1)
 
         # Show Frame.
         frame = cv2.resize(frame, (0, 0), fx=2., fy=2.)
@@ -185,8 +194,13 @@ if __name__ == '__main__':
         cv2.imshow('frame', frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
+        fps.update()
 
     # Clear resource.
+    fps.stop()
+    print("[INFO] elasped time: {:.2f}".format(fps.elapsed()))
+    print("[INFO] approx. FPS: {:.2f}".format(fps.fps()))
+	
     cam.stop()
     if outvid:
         writer.release()
