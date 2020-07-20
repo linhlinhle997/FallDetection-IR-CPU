@@ -21,6 +21,10 @@ python main.py -c ./video/input/test.avi -o ./video/output/test_out.avi
 ```markdown
 python main.py -c 0 -o ./video/output/test_out.avi
 ```
+- Run with External USB Camera
+```markdown
+python main.py -c 1 -o ./video/output/test_out.avi
+```
 ### Reference
 - AlphaPose: [https://github.com/Amanbhandula/AlphaPose](https://github.com/Amanbhandula/AlphaPose)
 - ST-GCN: [https://github.com/yysijie/st-gcn](https://github.com/yysijie/st-gcn)
