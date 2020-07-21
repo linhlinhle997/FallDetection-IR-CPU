@@ -12,7 +12,16 @@
 
 ### Use
 1. Download all pre-trained models into `./Models` folder.
-2. Run main.py
+2. Activate environment
+- Show list environments
+``` markdown
+conda env list 
+```
+- Activate environments
+``` markdown
+conda activate *name environment* 
+```
+3. Run main.py
 - Run with video
 ```markdown
 python main.py -c ./video/input/test.avi -o ./video/output/test_out.avi
@@ -25,6 +34,9 @@ python main.py -c 0 -o ./video/output/test_out.avi
 ```markdown
 python main.py -c 1 -o ./video/output/test_out.avi
 ```
+4. Exit
+Press `q` to exit the program
+
 ### Reference
 - AlphaPose: [https://github.com/Amanbhandula/AlphaPose](https://github.com/Amanbhandula/AlphaPose)
 - ST-GCN: [https://github.com/yysijie/st-gcn](https://github.com/yysijie/st-gcn)
