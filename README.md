@@ -19,7 +19,7 @@ conda env list
 ```
 - Activate environments
 ``` markdown
-conda activate *name environment* 
+conda activate falldetection  
 ```
 3. Run main.py
 - Run with video
